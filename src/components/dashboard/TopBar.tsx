@@ -1,10 +1,11 @@
 'use client';
 import { useGameStore } from "@/store/game-store";
 import { formatCurrency } from "@/lib/utils";
-import { TrendingUp, DollarSign, Calendar, Activity, RotateCcw } from "lucide-react";
+import { TrendingUp, DollarSign, Activity, RotateCcw } from "lucide-react";
 
 export function TopBar() {
-    const { gameState, resetGame } = useGameStore();
+    const gameState = useGameStore((state) => state.gameState);
+    const resetGame = useGameStore((state) => state.resetGame);
 
     const handleReset = () => {
         if (confirm("Are you sure you want to reset the simulation? All progress will be lost.")) {
@@ -15,26 +16,24 @@ export function TopBar() {
     return (
         <div className="w-full flex items-center justify-between p-4 bg-slate-800 border-b border-slate-700 shadow-md mb-6 sticky top-0 z-50">
             <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-900/30 rounded-lg border border-blue-500/30">
-                    <Activity className="text-blue-400" size={24} />
+                <div className="p-2 bg-emerald-900/30 rounded-lg border border-emerald-500/30">
+                    <Activity className="text-emerald-400" size={24} />
                 </div>
                 <span className="text-xl font-bold tracking-widest text-white">
-                    TOPAZ<span className="text-blue-500">VBE</span>
+                    TOPAZ<span className="text-emerald-500">VBE</span>
                 </span>
             </div>
 
             <div className="flex items-center gap-6">
                 <Metric
                     label="Cash"
-                    value={formatCurrency(gameState.cash)}
-                    icon={<DollarSign size={16} className="text-emerald-400" />}
-                    valueColor={gameState.cash < 0 ? "text-rose-400" : "text-emerald-400"}
+                    value={formatCurrency(gameState.player.cash)}
+                    valueColor={gameState.player.cash < 0 ? "text-rose-400" : "text-emerald-400"}
                 />
 
                 <Metric
                     label="Stock"
-                    value={formatCurrency(gameState.stockPrice)}
-                    icon={<TrendingUp size={16} className="text-blue-400" />}
+                    value={formatCurrency(gameState.player.sharePrice)}
                     valueColor="text-blue-400"
                 />
 
@@ -53,7 +52,7 @@ export function TopBar() {
     )
 }
 
-function Metric({ label, value, icon, valueColor }: any) {
+function Metric({ label, value, valueColor }: { label: string; value: string; valueColor: string }) {
     return (
         <div className="flex flex-col items-end">
             <span className="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-0.5 font-bold">

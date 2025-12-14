@@ -6,22 +6,34 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
 export function KPIBoard() {
-    const { gameState } = useGameStore();
+    const gameState = useGameStore((state) => state.gameState);
 
-    // Fallback data if no history yet
-    const data = gameState.history.length > 0 ? gameState.history : [{ quarter: 0, revenue: 0, profit: 0, stockPrice: 50 }];
+    // Build chart data from history
+    const data = gameState.player.history.length > 0
+        ? gameState.player.history.map(q => ({
+            quarter: q.quarter,
+            revenue: q.financials.revenue,
+            profit: q.financials.netProfit,
+            stockPrice: q.metrics.stockPrice
+        }))
+        : [{ quarter: 0, revenue: 0, profit: 0, stockPrice: 1 }];
+
+    // Get market share from last quarter or default
+    const lastQuarter = gameState.player.history[gameState.player.history.length - 1];
+    const marketShare = lastQuarter?.metrics.marketShare || 25;
+    const morale = gameState.player.morale || 75;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {/* Market Share */}
-            <div className="glass-card p-6 flex flex-col items-center justify-center">
-                <h3 className="text-gray-400 text-sm uppercase mb-4 w-full text-center">Market Share</h3>
+            <div className="glass-panel p-6 flex flex-col items-center justify-center rounded-xl">
+                <h3 className="text-slate-400 text-sm uppercase mb-4 w-full text-center font-bold tracking-wider">Market Share</h3>
                 <div className="w-24 h-24">
                     <CircularProgressbar
-                        value={gameState.marketShare}
-                        text={`${gameState.marketShare.toFixed(1)}%`}
+                        value={marketShare}
+                        text={`${marketShare.toFixed(1)}%`}
                         styles={buildStyles({
-                            pathColor: '#00e5ff',
+                            pathColor: '#10b981',
                             textColor: '#fff',
                             trailColor: 'rgba(255,255,255,0.1)',
                             textSize: '18px'
@@ -30,16 +42,16 @@ export function KPIBoard() {
                 </div>
             </div>
 
-            {/* Brand Equity */}
-            <div className="glass-card p-6 flex flex-col items-center justify-center">
-                <h3 className="text-gray-400 text-sm uppercase mb-4 w-full text-center">Brand Equity</h3>
+            {/* Employee Morale */}
+            <div className="glass-panel p-6 flex flex-col items-center justify-center rounded-xl">
+                <h3 className="text-slate-400 text-sm uppercase mb-4 w-full text-center font-bold tracking-wider">Employee Morale</h3>
                 <div className="w-24 h-24">
                     <CircularProgressbar
-                        value={gameState.brandEquity}
+                        value={morale}
                         maxValue={100}
-                        text={`${Math.round(gameState.brandEquity)}`}
+                        text={`${Math.round(morale)}%`}
                         styles={buildStyles({
-                            pathColor: '#bd00ff',
+                            pathColor: morale > 60 ? '#10b981' : morale > 40 ? '#f59e0b' : '#ef4444',
                             textColor: '#fff',
                             trailColor: 'rgba(255,255,255,0.1)',
                             textSize: '18px'
@@ -49,33 +61,33 @@ export function KPIBoard() {
             </div>
 
             {/* Financial Trend Chart */}
-            <div className="glass-card p-4 col-span-1 md:col-span-2 relative">
-                <h3 className="text-gray-400 text-sm uppercase mb-2">Financial Trend</h3>
+            <div className="glass-panel p-4 col-span-1 md:col-span-2 relative rounded-xl">
+                <h3 className="text-slate-400 text-sm uppercase mb-2 font-bold tracking-wider">Financial Trend</h3>
                 <div className="h-32 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={data}>
                             <defs>
                                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#00e5ff" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#00e5ff" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                             <XAxis dataKey="quarter" hide />
                             <YAxis hide />
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#111', borderColor: '#333' }}
-                                itemStyle={{ color: '#ccc' }}
+                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: 8 }}
+                                itemStyle={{ color: '#94a3b8' }}
                                 formatter={(value: number) => formatCurrency(value)}
                             />
-                            <Area type="monotone" dataKey="revenue" stroke="#00e5ff" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
-                            <Line type="monotone" dataKey="profit" stroke="#ff4d4d" strokeWidth={2} dot={false} />
+                            <Area type="monotone" dataKey="revenue" stroke="#10b981" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} name="Revenue" />
+                            <Line type="monotone" dataKey="profit" stroke="#ef4444" strokeWidth={2} dot={false} name="Profit" />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="flex justify-between px-2 mt-1 text-xs text-gray-500">
-                    <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#00e5ff] rounded-full"></div> Revenue</div>
-                    <div className="flex items-center gap-1"><div className="w-2 h-2 bg-[#ff4d4d] rounded-full"></div> Profit</div>
+                <div className="flex justify-between px-2 mt-1 text-xs text-slate-500">
+                    <div className="flex items-center gap-1"><div className="w-2 h-2 bg-emerald-500 rounded-full"></div> Revenue</div>
+                    <div className="flex items-center gap-1"><div className="w-2 h-2 bg-rose-500 rounded-full"></div> Profit</div>
                 </div>
             </div>
         </div>

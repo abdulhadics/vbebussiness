@@ -1,13 +1,22 @@
 'use client';
-import { useGameStore } from "@/store/game-store";
+// This component is currently not in use - placeholder for future event system
 import { motion } from "framer-motion";
-import { AlertTriangle, X, Zap, Trophy, TrendingDown } from "lucide-react";
+import { X, Zap, Trophy, TrendingDown } from "lucide-react";
+import { useState } from "react";
 
-export function EventModal() {
-    const { showEventModal, setShowEventModal, gameState } = useGameStore();
-    const event = gameState.lastEvent;
+interface GameEvent {
+    title: string;
+    description: string;
+    impactType: 'positive' | 'negative' | 'neutral';
+}
 
-    if (!showEventModal || !event) return null;
+interface EventModalProps {
+    event: GameEvent | null;
+    onClose: () => void;
+}
+
+export function EventModal({ event, onClose }: EventModalProps) {
+    if (!event) return null;
 
     let Icon = Zap;
     let colorClass = "text-blue-500";
@@ -31,11 +40,11 @@ export function EventModal() {
             <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className={`bg-[#0f0f13] border ${borderClass} rounded-2xl p-8 max-w-md w-full relative shadow-2xl`}
+                className={`bg-slate-900 border ${borderClass} rounded-2xl p-8 max-w-md w-full relative shadow-2xl`}
             >
                 <button
-                    onClick={() => setShowEventModal(false)}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-slate-400 hover:text-white"
                 >
                     <X size={20} />
                 </button>
@@ -45,10 +54,10 @@ export function EventModal() {
                         <Icon size={48} className={colorClass} />
                     </div>
                     <h2 className="text-2xl font-bold text-white tracking-wide">{event.title}</h2>
-                    <p className="text-gray-300 leading-relaxed">{event.description}</p>
+                    <p className="text-slate-300 leading-relaxed">{event.description}</p>
 
                     <button
-                        onClick={() => setShowEventModal(false)}
+                        onClick={onClose}
                         className="mt-6 px-6 py-3 bg-white text-black font-bold uppercase tracking-widest text-sm rounded hover:bg-gray-200 w-full transition-colors"
                     >
                         Acknowledge
