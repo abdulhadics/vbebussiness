@@ -117,7 +117,7 @@ export function SalesDecisions() {
                             <BarChart3 size={18} className="text-emerald-400" />
                             Units Sold by Quarter
                         </h3>
-                        <div className="h-64">
+                        <div style={{ height: '300px', width: '100%' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={salesChartData}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -131,7 +131,7 @@ export function SalesDecisions() {
                                             color: '#fff'
                                         }}
                                     />
-                                    <Bar dataKey="units" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="units" fill="#10b981" radius={[4, 4, 0, 0]} name="Units" />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -143,7 +143,7 @@ export function SalesDecisions() {
                             <TrendingUp size={18} className="text-indigo-400" />
                             Revenue Trend
                         </h3>
-                        <div className="h-64">
+                        <div style={{ height: '300px', width: '100%' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={salesChartData}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -164,6 +164,7 @@ export function SalesDecisions() {
                                         stroke="#6366f1"
                                         strokeWidth={3}
                                         dot={{ fill: '#6366f1', strokeWidth: 2 }}
+                                        name="Revenue"
                                     />
                                 </LineChart>
                             </ResponsiveContainer>
@@ -175,8 +176,8 @@ export function SalesDecisions() {
             {/* Staff Distribution Pie Chart */}
             <GlassCard className="p-6">
                 <h3 className="text-lg font-bold text-white mb-4">Staff Distribution by Region</h3>
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="h-64">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div style={{ height: '350px', width: '100%' }}>
                         <h4 className="text-sm text-slate-400 mb-2 text-center">Sales Reps</h4>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -186,7 +187,7 @@ export function SalesDecisions() {
                                     nameKey="name"
                                     cx="50%"
                                     cy="50%"
-                                    outerRadius={80}
+                                    outerRadius={100}
                                     label={({ name, value }) => `${name}: ${value}`}
                                 >
                                     {regionalData.map((entry, index) => (
@@ -194,10 +195,11 @@ export function SalesDecisions() {
                                     ))}
                                 </Pie>
                                 <Tooltip />
+                                <Legend verticalAlign="bottom" height={36} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="h-64">
+                    <div style={{ height: '350px', width: '100%' }}>
                         <h4 className="text-sm text-slate-400 mb-2 text-center">Marketing Staff</h4>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -207,7 +209,7 @@ export function SalesDecisions() {
                                     nameKey="name"
                                     cx="50%"
                                     cy="50%"
-                                    outerRadius={80}
+                                    outerRadius={100}
                                     label={({ name, value }) => `${name}: ${value}`}
                                 >
                                     {regionalData.map((entry, index) => (
@@ -215,6 +217,7 @@ export function SalesDecisions() {
                                     ))}
                                 </Pie>
                                 <Tooltip />
+                                <Legend verticalAlign="bottom" height={36} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>

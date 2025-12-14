@@ -137,6 +137,16 @@ export class SimulationEngine {
         let totalMarketingSpend = 0;
         let totalUnitsSold = 0;
 
+        const salesByProduct: { product: string; units: number; revenue: number; }[] = [];
+
+        const regions = ['south', 'west', 'north', 'export'] as const;
+        const regionalRevenue = {
+            south: { p1: 0, p2: 0, p3: 0 },
+            west: { p1: 0, p2: 0, p3: 0 },
+            north: { p1: 0, p2: 0, p3: 0 },
+            export: { p1: 0, p2: 0, p3: 0 }
+        };
+
         products.forEach(p => {
             const prodDec = decisions.products[p];
 
@@ -159,9 +169,35 @@ export class SimulationEngine {
             const sold = Math.min(demand, company.inventory[p]);
             company.inventory[p] -= sold;
 
-            totalRevenue += (sold * price);
+            const revenue = sold * price;
+            totalRevenue += revenue;
             totalUnitsSold += sold;
             totalMarketingSpend += totalMarketing;
+
+            salesByProduct.push({
+                product: p.toUpperCase(),
+                units: sold,
+                revenue: revenue
+            });
+
+            // Distribute sales to regions based on marketing weight
+            // Base weight 1000 ensures some sales even with 0 marketing
+            let totalWeight = 0;
+            const weights: Record<string, number> = {};
+
+            regions.forEach(r => {
+                const w = 1000 + prodDec.marketing[r];
+                weights[r] = w;
+                totalWeight += w;
+            });
+
+            regions.forEach(r => {
+                const ratio = weights[r] / totalWeight;
+                const rUnits = Math.floor(sold * ratio);
+                const rRev = rUnits * price;
+
+                regionalRevenue[r][p] += rRev;
+            });
         });
 
 
@@ -241,7 +277,15 @@ export class SimulationEngine {
                 stockPrice: company.sharePrice,
                 unitsSold: totalUnitsSold,
                 employeeMorale: company.morale
-            }
+            },
+            salesByProduct: salesByProduct,
+            salesByRegion: regions.map(r => ({
+                region: r.charAt(0).toUpperCase() + r.slice(1),
+                p1: regionalRevenue[r].p1,
+                p2: regionalRevenue[r].p2,
+                p3: regionalRevenue[r].p3,
+                total: regionalRevenue[r].p1 + regionalRevenue[r].p2 + regionalRevenue[r].p3
+            }))
         };
 
         company.history.push(result);

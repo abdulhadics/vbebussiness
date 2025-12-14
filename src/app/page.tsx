@@ -10,9 +10,10 @@ import { QuarterlyReport } from "@/components/dashboard/QuarterlyReport";
 import { WaitingOverlay } from "@/components/dashboard/WaitingOverlay";
 import { LockedFormGuard } from "@/components/dashboard/LockedFormGuard";
 import { ProcessingOverlay } from "@/components/ui/ProcessingOverlay";
+import { GameControlsDock } from "@/components/ui/GameControlsDock";
 import { GameModeSelect } from "@/components/GameModeSelect";
 import { useGameStore, AVAILABLE_COMPANIES } from "@/store/game-store";
-import { Megaphone, Cog, Users, BarChart3, FileText, RotateCcw, Rocket, Printer } from "lucide-react";
+import { Megaphone, Cog, Users, BarChart3, FileText } from "lucide-react";
 import { useState } from "react";
 import { ClientOnly } from "@/components/ClientOnly";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,6 +43,23 @@ export default function Home() {
     setIsProcessing(false);
   };
 
+  const handleSave = () => {
+    alert('✅ Decisions saved for this quarter!');
+  };
+
+  const handleDiscard = () => {
+    if (confirm('Discard all changes for this quarter?')) {
+      window.location.reload();
+    }
+  };
+
+  const handleReset = () => {
+    if (confirm('🔄 Reset entire simulation? All progress will be lost!')) {
+      resetGame();
+      setGameMode(null);
+    }
+  };
+
   const tabs = [
     { id: 'marketing' as const, label: 'Marketing', icon: <Megaphone size={18} /> },
     { id: 'sales' as const, label: 'Sales', icon: <Users size={18} /> },
@@ -61,7 +79,7 @@ export default function Home() {
 
   return (
     <ClientOnly>
-      <main className="min-h-screen bg-slate-950 pb-40">
+      <main className="min-h-screen bg-slate-950 pb-40 flex flex-col relative">
         {/* Processing Overlay */}
         <ProcessingOverlay
           isProcessing={isProcessing}
@@ -129,70 +147,19 @@ export default function Home() {
           </LockedFormGuard>
         </div>
 
-        {/* Fixed Footer Action Bar - Black/White Style */}
-        <motion.div
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-2xl"
-        >
-          <div className="max-w-[1400px] mx-auto flex justify-between items-center">
-            {/* Left Side - Status */}
-            <div className="flex items-center gap-4">
-              {/* Company Status Pill */}
-              <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-gray-100">
-                <div
-                  className="w-2.5 h-2.5 rounded-full animate-pulse"
-                  style={{ backgroundColor: companyInfo?.color }}
-                />
-                <span className="text-sm font-bold text-black">
-                  {gameState?.player.companyName}
-                </span>
-                <span className="text-gray-400">•</span>
-                <span className="text-sm font-mono text-gray-600">
-                  Quarter {gameState?.market.quarter}
-                </span>
-              </div>
-
-              {/* Reset Button */}
-              <button
-                onClick={() => {
-                  if (confirm('Reset simulation? All progress will be lost.')) {
-                    resetGame();
-                    setGameMode('single'); // Force back to mode select
-                  }
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors"
-              >
-                <RotateCcw size={16} />
-                Reset
-              </button>
-            </div>
-
-            {/* Right Side - RUN QUARTER Button */}
-            <motion.button
-              onClick={handleExecute}
-              disabled={isProcessing}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className={`
-                flex items-center gap-3
-                px-10 py-4
-                rounded-full
-                font-bold text-base
-                uppercase tracking-wider
-                transition-all duration-200
-                ${isProcessing
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-black text-white hover:bg-gray-800 shadow-lg'
-                }
-              `}
-            >
-              <Rocket size={20} />
-              <span>Run Quarter</span>
-            </motion.button>
-          </div>
-        </motion.div>
+        {/* Premium Floating Glass Dock */}
+        <GameControlsDock
+          onRunQuarter={handleExecute}
+          onSave={handleSave}
+          onDiscard={handleDiscard}
+          onReset={handleReset}
+          isProcessing={isProcessing}
+          isLocked={currentStatus === 'SUBMITTED' || currentStatus === 'LOCKED'}
+          currentQuarter={gameState?.market.quarter}
+          companyName={gameState?.player.companyName}
+        />
       </main>
     </ClientOnly>
   );
 }
+

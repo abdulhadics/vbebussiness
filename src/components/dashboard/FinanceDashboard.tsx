@@ -27,15 +27,22 @@ export function FinanceDashboard() {
     };
 
     // Historical data for charts
-    const historicalData = player.history.map((q, i) => ({
-        quarter: `Q${q.quarter}`,
-        revenue: q.financials.revenue,
-        profit: q.financials.netProfit,
-        cogs: q.financials.cogs,
-        cash: q.financials.assets.cash,
-        stockPrice: q.metrics.stockPrice,
-        marketShare: q.metrics.marketShare
-    }));
+    const historicalData = player.history.map((q, i) => {
+        const p1 = q.salesByProduct?.find(p => p.product === 'P1')?.revenue || 0;
+        const p2 = q.salesByProduct?.find(p => p.product === 'P2')?.revenue || 0;
+        const p3 = q.salesByProduct?.find(p => p.product === 'P3')?.revenue || 0;
+
+        return {
+            quarter: `Q${q.quarter}`,
+            revenue: q.financials.revenue,
+            profit: q.financials.netProfit,
+            cogs: q.financials.cogs,
+            cash: q.financials.assets.cash,
+            stockPrice: q.metrics.stockPrice,
+            marketShare: q.metrics.marketShare,
+            p1, p2, p3
+        };
+    });
 
     // Expense breakdown for pie chart
     const expenseData = [
@@ -133,7 +140,7 @@ export function FinanceDashboard() {
                     {/* Revenue & Profit Trend */}
                     <section className="glass-panel rounded-xl p-6">
                         <h3 className="text-xl font-bold text-white mb-6">📈 Revenue & Profit Trend</h3>
-                        <div className="h-80">
+                        <div style={{ height: '400px', width: '100%' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={historicalData}>
                                     <defs>
@@ -161,12 +168,54 @@ export function FinanceDashboard() {
                         </div>
                     </section>
 
-                    {/* Two Column Charts */}
+                    {/* NEW: Product Sales & Net Income Charts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Product Sales Breakdown */}
+                        <section className="glass-panel rounded-xl p-6">
+                            <h3 className="text-lg font-bold text-white mb-4">🛍️ Product Sales Breakdown</h3>
+                            <div style={{ height: '300px', width: '100%' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={historicalData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                        <XAxis dataKey="quarter" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} />
+                                        <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
+                                        <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8 }} formatter={(v: number) => formatCurrency(v)} />
+                                        <Legend />
+                                        <Bar dataKey="p1" name="Product 1" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
+                                        <Bar dataKey="p2" name="Product 2" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
+                                        <Bar dataKey="p3" name="Product 3" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </section>
+
+                        {/* Net Income History chart */}
+                        <section className="glass-panel rounded-xl p-6">
+                            <h3 className="text-lg font-bold text-white mb-4">💰 Net Income History</h3>
+                            <div style={{ height: '300px', width: '100%' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={historicalData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                        <XAxis dataKey="quarter" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} />
+                                        <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
+                                        <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8 }} formatter={(v: number) => formatCurrency(v)} />
+                                        <Bar dataKey="profit" name="Net Profit" radius={[4, 4, 0, 0]}>
+                                            {historicalData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.profit >= 0 ? '#10b981' : '#ef4444'} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </section>
+                    </div>
+
+                    {/* Stock Price & Expense (Lower Grid) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Stock Price Chart */}
                         <section className="glass-panel rounded-xl p-6">
                             <h3 className="text-lg font-bold text-white mb-4">📊 Stock Price History</h3>
-                            <div className="h-64">
+                            <div style={{ height: '300px', width: '100%' }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={historicalData}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -182,7 +231,7 @@ export function FinanceDashboard() {
                         {/* Expense Breakdown */}
                         <section className="glass-panel rounded-xl p-6">
                             <h3 className="text-lg font-bold text-white mb-4">🥧 Expense Breakdown</h3>
-                            <div className="h-64">
+                            <div style={{ height: '300px', width: '100%' }}>
                                 {expenseData.length > 0 ? (
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
@@ -216,7 +265,7 @@ export function FinanceDashboard() {
                             <PiggyBank className="text-violet-400" size={24} />
                             Cash Position Over Time
                         </h3>
-                        <div className="h-64">
+                        <div style={{ height: '300px', width: '100%' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={historicalData}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />

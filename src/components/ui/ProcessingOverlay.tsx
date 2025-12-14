@@ -21,7 +21,7 @@ export function ProcessingOverlay({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[200] flex items-center justify-center"
+                    className="fixed inset-0 z-[300] flex items-center justify-center"
                 >
                     {/* Background with warp effect */}
                     <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950">

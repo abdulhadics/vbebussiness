@@ -2,6 +2,7 @@
 import { useGameStore } from "@/store/game-store";
 import { CapacityGauge } from "@/components/ui/CapacityGauge";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { Cog, Factory, Users, Wrench, TrendingDown, Zap, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -27,7 +28,7 @@ export function OperationsDecisions() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Production Capacity - Large Card */}
-                <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-lg">
+                <GlassCard className="lg:col-span-2" glow="blue">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-4">
                             <motion.div
@@ -37,8 +38,8 @@ export function OperationsDecisions() {
                                 <Factory className="w-7 h-7 text-white" />
                             </motion.div>
                             <div>
-                                <h3 className="text-xl font-bold text-black">Production Capacity</h3>
-                                <p className="text-sm text-gray-500">
+                                <h3 className="text-xl font-bold text-white">Production Capacity</h3>
+                                <p className="text-sm text-slate-400">
                                     {player.machines} Machines • {(player.machineEfficiency * 100).toFixed(0)}% Efficiency
                                 </p>
                             </div>
@@ -57,8 +58,8 @@ export function OperationsDecisions() {
                             <div
                                 key={shift}
                                 className={`p-3 rounded-xl text-center transition-all cursor-pointer ${decisions.operations.shiftLevel === shift
-                                    ? 'bg-blue-500 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
+                                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
                                     }`}
                                 onClick={() => setOperations('shiftLevel', shift as 1 | 2 | 3)}
                             >
@@ -69,10 +70,10 @@ export function OperationsDecisions() {
                             </div>
                         ))}
                     </div>
-                </div>
+                </GlassCard>
 
                 {/* Machine Assets - Side Card */}
-                <div className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-purple-500">
+                <GlassCard glow="purple">
                     <div className="flex items-center gap-3 mb-6">
                         <motion.div
                             whileHover={{ scale: 1.1 }}
@@ -80,7 +81,7 @@ export function OperationsDecisions() {
                         >
                             <Cog className="w-6 h-6 text-white" />
                         </motion.div>
-                        <h3 className="text-lg font-bold text-black">Machinery</h3>
+                        <h3 className="text-lg font-bold text-white">Machinery</h3>
                     </div>
 
                     <div className="space-y-4">
@@ -103,14 +104,14 @@ export function OperationsDecisions() {
                             negative
                         />
                     </div>
-                </div>
+                </GlassCard>
             </div>
 
             {/* Second Row - Maintenance & Personnel */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {/* Maintenance */}
-                <div className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-amber-500">
+                <GlassCard glow="amber">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <motion.div
@@ -120,8 +121,8 @@ export function OperationsDecisions() {
                                 <Wrench className="w-6 h-6 text-white" />
                             </motion.div>
                             <div>
-                                <h3 className="text-lg font-bold text-black">Maintenance</h3>
-                                <p className="text-xs text-gray-500">Hours per machine/quarter</p>
+                                <h3 className="text-lg font-bold text-white">Maintenance</h3>
+                                <p className="text-xs text-slate-400">Hours per machine/quarter</p>
                             </div>
                         </div>
                         <InfoTooltip text="Needs >20h to prevent efficiency loss." />
@@ -133,11 +134,11 @@ export function OperationsDecisions() {
                             key={decisions.operations.maintenanceHours}
                             initial={{ scale: 1.1 }}
                             animate={{ scale: 1 }}
-                            className="text-6xl font-mono font-bold text-black mb-2"
+                            className="text-6xl font-mono font-bold text-white mb-2"
                         >
                             {decisions.operations.maintenanceHours}h
                         </motion.div>
-                        <div className="text-gray-500">per machine</div>
+                        <div className="text-slate-400">per machine</div>
                     </div>
 
                     {/* Slider */}
@@ -147,23 +148,23 @@ export function OperationsDecisions() {
                         max={100}
                         value={decisions.operations.maintenanceHours}
                         onChange={(e) => setOperations('maintenanceHours', Number(e.target.value))}
-                        className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer accent-amber-500"
+                        className="w-full h-3 bg-slate-700 rounded-full appearance-none cursor-pointer accent-amber-500"
                     />
 
                     {decisions.operations.maintenanceHours < 20 && (
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2"
+                            className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-2"
                         >
                             <TrendingDown size={16} />
                             Low maintenance may cause efficiency degradation
                         </motion.div>
                     )}
-                </div>
+                </GlassCard>
 
                 {/* Workforce */}
-                <div className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-emerald-500">
+                <GlassCard glow="emerald">
                     <div className="flex items-center gap-3 mb-6">
                         <motion.div
                             whileHover={{ scale: 1.1 }}
@@ -172,30 +173,30 @@ export function OperationsDecisions() {
                             <Users className="w-6 h-6 text-white" />
                         </motion.div>
                         <div>
-                            <h3 className="text-lg font-bold text-black">Workforce</h3>
-                            <p className="text-xs text-gray-500">{player.employees} employees</p>
+                            <h3 className="text-lg font-bold text-white">Workforce</h3>
+                            <p className="text-xs text-slate-400">{player.employees} employees</p>
                         </div>
                     </div>
 
                     {/* Morale Gauge */}
-                    <div className="mb-6 p-4 rounded-xl bg-gray-100">
+                    <div className="mb-6 p-4 rounded-xl bg-black/20 border border-white/5">
                         <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Heart size={14} className={player.morale > 60 ? 'text-green-500' : player.morale > 40 ? 'text-amber-500' : 'text-red-500'} />
+                            <div className="flex items-center gap-2 text-sm text-slate-400">
+                                <Heart size={14} className={player.morale > 60 ? 'text-emerald-500' : player.morale > 40 ? 'text-amber-500' : 'text-rose-500'} />
                                 Morale
                             </div>
-                            <span className={`font-bold font-mono ${player.morale > 60 ? 'text-green-600' : player.morale > 40 ? 'text-amber-600' : 'text-red-600'}`}>
+                            <span className={`font-bold font-mono ${player.morale > 60 ? 'text-emerald-400' : player.morale > 40 ? 'text-amber-400' : 'text-rose-400'}`}>
                                 {player.morale}%
                             </span>
                         </div>
-                        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
                             <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${player.morale}%` }}
                                 transition={{ duration: 0.5 }}
-                                className={`h-full rounded-full ${player.morale > 60 ? 'bg-green-500' :
+                                className={`h-full rounded-full ${player.morale > 60 ? 'bg-emerald-500' :
                                     player.morale > 40 ? 'bg-amber-500' :
-                                        'bg-red-500'
+                                        'bg-rose-500'
                                     }`}
                             />
                         </div>
@@ -234,13 +235,13 @@ export function OperationsDecisions() {
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 text-sm flex items-center gap-2"
+                            className="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm flex items-center gap-2"
                         >
                             <Zap size={16} />
                             Below-market wages may hurt morale
                         </motion.div>
                     )}
-                </div>
+                </GlassCard>
             </div>
         </motion.div >
     )
@@ -265,17 +266,17 @@ function OperationInput({ label, value, onChange, min = 0, max = 100, step = 1, 
         <motion.div
             whileHover={{ scale: 1.02 }}
             className={`
-                rounded-xl bg-gray-50 border-2 border-gray-200
-                hover:border-gray-300 transition-all
+                rounded-xl bg-white/5 border border-white/10
+                hover:border-white/20 transition-all
                 ${compact ? 'p-3' : 'p-4'}
             `}
         >
             <div className="flex items-center justify-between mb-2">
-                <span className={`font-bold uppercase tracking-widest ${compact ? 'text-[10px]' : 'text-xs'} ${positive ? 'text-green-600' : negative ? 'text-red-600' : 'text-gray-500'}`}>
+                <span className={`font-bold uppercase tracking-widest ${compact ? 'text-[10px]' : 'text-xs'} ${positive ? 'text-emerald-400' : negative ? 'text-rose-400' : 'text-slate-400'}`}>
                     {label}
                 </span>
                 {helperText && (
-                    <span className="text-[10px] text-gray-400">{helperText}</span>
+                    <span className="text-[10px] text-slate-500">{helperText}</span>
                 )}
             </div>
             <div className="flex items-center gap-2">
@@ -285,10 +286,16 @@ function OperationInput({ label, value, onChange, min = 0, max = 100, step = 1, 
                     min={min}
                     max={max}
                     step={step}
-                    onChange={(e) => onChange(Number(e.target.value))}
-                    className={`w-full bg-white text-black font-bold font-mono outline-none border-2 border-gray-200 rounded-lg p-2 focus:border-black transition-colors ${compact ? 'text-xl' : 'text-2xl'}`}
+                    onChange={(e) => {
+                        // Numeric clamp validation
+                        const val = Number(e.target.value);
+                        // We allow user to type, but parent logic or blur should perhaps clamp?
+                        // For now we just pass value, but standard pattern suggests clamp
+                        onChange(val);
+                    }}
+                    className={`w-full bg-slate-900/50 text-white font-bold font-mono outline-none border border-white/10 rounded-lg p-2 focus:border-white/30 transition-colors ${compact ? 'text-xl' : 'text-2xl'}`}
                 />
-                {suffix && <span className="text-gray-500 text-sm">{suffix}</span>}
+                {suffix && <span className="text-slate-500 text-sm">{suffix}</span>}
             </div>
         </motion.div>
     );
