@@ -45,6 +45,11 @@ interface GameStore {
     setMarketing: (product: 'p1' | 'p2' | 'p3', region: 'south' | 'west' | 'north' | 'export', value: number) => void;
     setOperations: (field: keyof DetailedDecisions['operations'], value: any) => void;
     setPersonnel: (field: keyof DetailedDecisions['personnel'], value: number) => void;
+    setRegionalStaff: (region: 'south' | 'west' | 'north' | 'export', field: 'salesReps' | 'marketingStaff', value: number) => void;
+
+    // Game mode
+    gameMode: 'single' | 'multiplayer' | null;
+    setGameMode: (mode: 'single' | 'multiplayer') => void;
 
     // Game actions
     submitDecisions: () => Promise<void>; // Submit current company's decisions
@@ -211,6 +216,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
             }
         }
     })),
+
+    setRegionalStaff: (region, field, value) => set(state => ({
+        drafts: {
+            ...state.drafts,
+            [state.activeCompanyId]: {
+                ...state.drafts[state.activeCompanyId],
+                regionalStaff: {
+                    ...state.drafts[state.activeCompanyId].regionalStaff,
+                    [region]: {
+                        ...state.drafts[state.activeCompanyId].regionalStaff[region],
+                        [field]: value
+                    }
+                }
+            }
+        }
+    })),
+
+    // Game mode
+    gameMode: null,
+    setGameMode: (mode) => set({ gameMode: mode }),
 
     // Submit decisions for current company
     submitDecisions: async () => {

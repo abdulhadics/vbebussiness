@@ -3,69 +3,65 @@ import { CompanyHeader } from "@/components/dashboard/CompanyHeader";
 import { CompanySwitcher } from "@/components/dashboard/CompanySwitcher";
 import { MarketingDecisions } from "@/components/dashboard/MarketingDecisions";
 import { OperationsDecisions } from "@/components/dashboard/OperationsDecisions";
+import { SalesDecisions } from "@/components/dashboard/SalesDecisions";
 import { FinanceDashboard } from "@/components/dashboard/FinanceDashboard";
+import { ManagementReport } from "@/components/dashboard/ManagementReport";
 import { QuarterlyReport } from "@/components/dashboard/QuarterlyReport";
 import { WaitingOverlay } from "@/components/dashboard/WaitingOverlay";
 import { LockedFormGuard } from "@/components/dashboard/LockedFormGuard";
 import { ProcessingOverlay } from "@/components/ui/ProcessingOverlay";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { BubbleButton, ExecuteButton } from "@/components/ui/BubbleButton";
+import { GameModeSelect } from "@/components/GameModeSelect";
 import { useGameStore, AVAILABLE_COMPANIES } from "@/store/game-store";
-import { Rocket, BarChart3, Megaphone, Cog, FileText, RotateCcw, Send, Sparkles } from "lucide-react";
+import { Megaphone, Cog, Users, BarChart3, FileText, RotateCcw, Rocket, Printer } from "lucide-react";
 import { useState } from "react";
 import { ClientOnly } from "@/components/ClientOnly";
 import { motion, AnimatePresence } from "framer-motion";
 
+type TabType = 'marketing' | 'sales' | 'operations' | 'finance' | 'report';
+
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'marketing' | 'operations' | 'finance'>('marketing');
+  const [activeTab, setActiveTab] = useState<TabType>('marketing');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const gameMode = useGameStore((state) => state.gameMode);
+  const setGameMode = useGameStore((state) => state.setGameMode);
   const activeCompanyId = useGameStore((state) => state.activeCompanyId);
   const companyStates = useGameStore((state) => state.companyStates);
   const companyStatuses = useGameStore((state) => state.companyStatuses);
   const advanceQuarter = useGameStore((state) => state.advanceQuarter);
-  const submitDecisions = useGameStore((state) => state.submitDecisions);
-  const openReport = useGameStore((state) => state.openReport);
   const resetGame = useGameStore((state) => state.resetGame);
 
   const gameState = companyStates[activeCompanyId];
   const currentStatus = companyStatuses[activeCompanyId];
   const companyInfo = AVAILABLE_COMPANIES.find(c => c.id === activeCompanyId);
 
-  const hasHistory = gameState?.player.history.length > 0;
-  const isSubmitted = currentStatus === 'SUBMITTED';
-
   const handleExecute = async () => {
     setIsProcessing(true);
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     advanceQuarter();
     setIsProcessing(false);
   };
 
   const tabs = [
-    { id: 'marketing' as const, label: 'Marketing', icon: <Megaphone size={18} />, color: 'from-pink-500 to-rose-500' },
-    { id: 'operations' as const, label: 'Operations', icon: <Cog size={18} />, color: 'from-blue-500 to-cyan-500' },
-    { id: 'finance' as const, label: 'Finance', icon: <BarChart3 size={18} />, color: 'from-amber-500 to-orange-500' },
+    { id: 'marketing' as const, label: 'Marketing', icon: <Megaphone size={18} /> },
+    { id: 'sales' as const, label: 'Sales', icon: <Users size={18} /> },
+    { id: 'operations' as const, label: 'Operations', icon: <Cog size={18} /> },
+    { id: 'finance' as const, label: 'Finance', icon: <BarChart3 size={18} /> },
+    { id: 'report' as const, label: 'Management Report', icon: <FileText size={18} /> },
   ];
 
-  // Staggered animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
+  // Show game mode selection if not selected
+  if (!gameMode) {
+    return (
+      <ClientOnly>
+        <GameModeSelect onSelect={(mode) => setGameMode(mode)} />
+      </ClientOnly>
+    );
+  }
 
   return (
     <ClientOnly>
-      <main className="min-h-screen pb-40 relative">
+      <main className="min-h-screen bg-slate-950 pb-40">
         {/* Processing Overlay */}
         <ProcessingOverlay
           isProcessing={isProcessing}
@@ -73,160 +69,127 @@ export default function Home() {
         />
 
         <div className="max-w-[1400px] mx-auto pt-8 px-6">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {/* Company Switcher */}
-            <motion.div variants={itemVariants}>
-              <CompanySwitcher />
-            </motion.div>
+          {/* Company Switcher - Only show in Multiplayer */}
+          {gameMode === 'multiplayer' && <CompanySwitcher />}
 
-            {/* Company Header */}
-            <motion.div variants={itemVariants}>
-              <CompanyHeader />
-            </motion.div>
+          {/* Company Header */}
+          <CompanyHeader />
 
-            {/* Modals */}
-            <QuarterlyReport />
-            <WaitingOverlay />
+          {/* Modals */}
+          <QuarterlyReport />
+          <WaitingOverlay />
 
-            {/* Tab Navigation - Bubble Style */}
-            <motion.div
-              variants={itemVariants}
-              className="glass-card mb-8 p-3 flex gap-3 sticky top-4 z-40"
-            >
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <motion.button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`
-                      flex-1 flex items-center justify-center gap-3 
-                      px-6 py-4 
-                      rounded-xl 
-                      font-bold text-sm uppercase tracking-wider 
-                      transition-all duration-300
-                      ${isActive
-                        ? `bg-gradient-to-r ${tab.color} text-white shadow-lg`
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
-                      }
-                    `}
-                  >
-                    {tab.icon}
-                    {tab.label}
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeTabIndicator"
-                        className="absolute inset-0 rounded-xl border-2 border-white/20"
-                        transition={{ type: "spring", duration: 0.5 }}
-                      />
-                    )}
-                  </motion.button>
-                );
-              })}
-            </motion.div>
-
-            {/* Content Area with Lock Guard */}
-            <LockedFormGuard>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${activeCompanyId}-${activeTab}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-8"
+          {/* Tab Navigation - Black/White Style */}
+          <div className="bg-white rounded-2xl mb-8 p-2 flex gap-2 sticky top-4 z-40 shadow-lg">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <motion.button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`
+                    flex-1 flex items-center justify-center gap-2 
+                    px-4 py-3 
+                    rounded-xl 
+                    font-bold text-sm 
+                    transition-all duration-200
+                    ${isActive
+                      ? 'bg-black text-white'
+                      : 'text-gray-500 hover:text-black hover:bg-gray-100'
+                    }
+                  `}
                 >
-                  {activeTab === 'marketing' && <MarketingDecisions />}
-                  {activeTab === 'operations' && <OperationsDecisions />}
-                  {activeTab === 'finance' && <FinanceDashboard />}
-                </motion.div>
-              </AnimatePresence>
-            </LockedFormGuard>
-          </motion.div>
+                  {tab.icon}
+                  <span className="hidden md:inline">{tab.label}</span>
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {/* Content Area */}
+          <LockedFormGuard>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`${activeCompanyId}-${activeTab}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                {activeTab === 'marketing' && <MarketingDecisions />}
+                {activeTab === 'sales' && <SalesDecisions />}
+                {activeTab === 'operations' && <OperationsDecisions />}
+                {activeTab === 'finance' && <FinanceDashboard />}
+                {activeTab === 'report' && <ManagementReport />}
+              </motion.div>
+            </AnimatePresence>
+          </LockedFormGuard>
         </div>
 
-        {/* Fixed Footer Action Bar */}
+        {/* Fixed Footer Action Bar - Black/White Style */}
         <motion.div
           initial={{ y: 100 }}
           animate={{ y: 0 }}
-          className="fixed bottom-0 left-0 right-0 glass-card rounded-none border-x-0 border-b-0 p-5 z-50"
+          className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-2xl"
         >
           <div className="max-w-[1400px] mx-auto flex justify-between items-center">
-            {/* Left Side - Status & Quick Actions */}
+            {/* Left Side - Status */}
             <div className="flex items-center gap-4">
               {/* Company Status Pill */}
-              <div
-                className="flex items-center gap-3 px-5 py-2.5 rounded-full border"
-                style={{
-                  backgroundColor: `${companyInfo?.color}10`,
-                  borderColor: `${companyInfo?.color}30`
-                }}
-              >
+              <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-gray-100">
                 <div
                   className="w-2.5 h-2.5 rounded-full animate-pulse"
                   style={{ backgroundColor: companyInfo?.color }}
                 />
-                <span className="text-sm font-bold text-white">
+                <span className="text-sm font-bold text-black">
                   {gameState?.player.companyName}
                 </span>
-                <span className="text-slate-500">•</span>
-                <span className="text-sm font-mono text-emerald-400">
-                  Q{gameState?.market.quarter}
+                <span className="text-gray-400">•</span>
+                <span className="text-sm font-mono text-gray-600">
+                  Quarter {gameState?.market.quarter}
                 </span>
               </div>
 
-              {/* Quick Actions */}
-              {hasHistory && (
-                <BubbleButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={openReport}
-                  icon={<FileText size={16} />}
-                >
-                  View Report
-                </BubbleButton>
-              )}
-
-              <BubbleButton
-                variant="ghost"
-                size="sm"
+              {/* Reset Button */}
+              <button
                 onClick={() => {
                   if (confirm('Reset simulation? All progress will be lost.')) {
                     resetGame();
+                    setGameMode('single'); // Force back to mode select
                   }
                 }}
-                icon={<RotateCcw size={16} />}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition-colors"
               >
+                <RotateCcw size={16} />
                 Reset
-              </BubbleButton>
+              </button>
             </div>
 
-            {/* Right Side - Primary Actions */}
-            <div className="flex gap-4 items-center">
-              {/* Submit Button (Multiplayer) */}
-              <BubbleButton
-                variant="secondary"
-                onClick={() => submitDecisions()}
-                disabled={isSubmitted}
-                icon={<Send size={16} />}
-              >
-                {isSubmitted ? 'Submitted' : 'Submit'}
-              </BubbleButton>
-
-              {/* Execute Button (Primary Action) */}
-              <ExecuteButton
-                onClick={handleExecute}
-                disabled={isProcessing}
-              >
-                Execute Quarter
-              </ExecuteButton>
-            </div>
+            {/* Right Side - RUN QUARTER Button */}
+            <motion.button
+              onClick={handleExecute}
+              disabled={isProcessing}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`
+                flex items-center gap-3
+                px-10 py-4
+                rounded-full
+                font-bold text-base
+                uppercase tracking-wider
+                transition-all duration-200
+                ${isProcessing
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-black text-white hover:bg-gray-800 shadow-lg'
+                }
+              `}
+            >
+              <Rocket size={20} />
+              <span>Run Quarter</span>
+            </motion.button>
           </div>
         </motion.div>
       </main>

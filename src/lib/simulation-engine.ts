@@ -176,13 +176,23 @@ export class SimulationEngine {
         const salaries = (company.employees * 3000) + (decisions.personnel.salesSalary * 10); // Fixed admin overhead
         const interestExpense = company.loans * (market.interestRate / 4); // Quarterly interest
 
+        const salesforceExpense = (decisions.regionalStaff?.south?.salesReps || 0) * 2500 +
+            (decisions.regionalStaff?.west?.salesReps || 0) * 2500 +
+            (decisions.regionalStaff?.north?.salesReps || 0) * 2500 +
+            (decisions.regionalStaff?.export?.salesReps || 0) * 2500 +
+            (decisions.regionalStaff?.south?.marketingStaff || 0) * 3000 +
+            (decisions.regionalStaff?.west?.marketingStaff || 0) * 3000 +
+            (decisions.regionalStaff?.north?.marketingStaff || 0) * 3000 +
+            (decisions.regionalStaff?.export?.marketingStaff || 0) * 3000;
+
         const expenses = {
             marketing: totalMarketingSpend,
             rd: 0, // Not in input yet, assume 0
             depreciation: company.machines * 500, // Fixed depreciation
             interest: interestExpense,
             tax: 0,
-            personnel: salaries + maintenanceCost
+            personnel: salaries + maintenanceCost,
+            salesforce: salesforceExpense
         };
 
         const totalOpex = Object.values(expenses).reduce((a, b) => a + b, 0);

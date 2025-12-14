@@ -9,6 +9,7 @@ export interface Financials {
         interest: number;
         tax: number;
         personnel: number;
+        salesforce: number;
     };
     netProfit: number;
     assets: {
@@ -43,6 +44,12 @@ export interface Competitor {
     lastDecisions?: DetailedDecisions;
 }
 
+// Regional Staff Structure
+export interface RegionalStaff {
+    salesReps: number;
+    marketingStaff: number;
+}
+
 export interface CompanyState {
     companyName: string;
     sharePrice: number;
@@ -52,6 +59,14 @@ export interface CompanyState {
     employees: number;
     morale: number;        // 0-100
     productivity: number;  // Multiplier, e.g., 1.0
+
+    // Regional Staff
+    regionalStaff: {
+        south: RegionalStaff;
+        west: RegionalStaff;
+        north: RegionalStaff;
+        export: RegionalStaff;
+    };
 
     // Ops
     machines: number;
@@ -79,18 +94,35 @@ export interface GameState {
     isGameOver: boolean;
 }
 
-// Re-export existing decision types so we don't break UI
+// Product Marketing with Regional Budget
 export interface ProductDecisions {
     price: number;
     marketing: { south: number; west: number; north: number; export: number; };
     production: number;
 }
 
+// Regional Staff Decisions
+export interface RegionalStaffDecisions {
+    south: RegionalStaff;
+    west: RegionalStaff;
+    north: RegionalStaff;
+    export: RegionalStaff;
+}
+
 export interface DetailedDecisions {
     products: { p1: ProductDecisions; p2: ProductDecisions; p3: ProductDecisions; };
     operations: { shiftLevel: 1 | 2 | 3; maintenanceHours: number; buyMachines: number; sellMachines: number; };
     personnel: { recruitSales: number; dismissSales: number; salesSalary: number; recruitWorkers: number; dismissWorkers: number; workerWage: number; };
+    regionalStaff: RegionalStaffDecisions;
     intelligence: { buyCompetitorInfo: boolean; buyMarketShareInfo: boolean; };
+}
+
+export interface SalesData {
+    region: string;
+    p1: number;
+    p2: number;
+    p3: number;
+    total: number;
 }
 
 export interface QuarterResult {
@@ -102,7 +134,16 @@ export interface QuarterResult {
         unitsSold: number;
         employeeMorale: number;
     };
+    salesByRegion?: SalesData[];
+    salesByProduct?: { product: string; units: number; revenue: number; }[];
 }
+
+export const INITIAL_REGIONAL_STAFF: RegionalStaffDecisions = {
+    south: { salesReps: 4, marketingStaff: 2 },
+    west: { salesReps: 4, marketingStaff: 2 },
+    north: { salesReps: 4, marketingStaff: 2 },
+    export: { salesReps: 4, marketingStaff: 2 },
+};
 
 export const INITIAL_GAME_STATE: GameState = {
     market: {
@@ -122,10 +163,16 @@ export const INITIAL_GAME_STATE: GameState = {
         machines: 10,
         machineEfficiency: 0.95,
         inventory: { p1: 500, p2: 200, p3: 0 },
-        cash: 200000,
+        cash: 500000,
         loans: 0,
-        netWorth: 500000,
+        netWorth: 1000000,
         creditRating: 100,
+        regionalStaff: {
+            south: { salesReps: 4, marketingStaff: 2 },
+            west: { salesReps: 4, marketingStaff: 2 },
+            north: { salesReps: 4, marketingStaff: 2 },
+            export: { salesReps: 4, marketingStaff: 2 },
+        },
         history: []
     },
     competitors: [
@@ -146,5 +193,6 @@ export const INITIAL_DECISIONS: DetailedDecisions = {
     },
     operations: { shiftLevel: 1, maintenanceHours: 40, buyMachines: 0, sellMachines: 0 },
     personnel: { recruitSales: 0, dismissSales: 0, salesSalary: 2000, recruitWorkers: 0, dismissWorkers: 0, workerWage: 12 },
+    regionalStaff: INITIAL_REGIONAL_STAFF,
     intelligence: { buyCompetitorInfo: false, buyMarketShareInfo: false }
 };
