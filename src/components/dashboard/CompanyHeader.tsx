@@ -3,7 +3,8 @@ import { useGameStore, AVAILABLE_COMPANIES } from "@/store/game-store";
 import { formatCurrency } from "@/lib/utils";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { MicroSparkline } from "@/components/ui/MicroSparkline";
-import { LineChart, DollarSign, Users, TrendingUp, Package } from "lucide-react";
+import { LineChart, DollarSign, Users, TrendingUp, Package, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function CompanyHeader() {
     const activeCompanyId = useGameStore((state) => state.activeCompanyId);
@@ -20,45 +21,94 @@ export function CompanyHeader() {
     const priceHistory = player.history.map(q => q.metrics.stockPrice);
     const cashHistory = player.history.map(q => q.financials.assets.cash);
 
-    // Add current values to history for sparkline
     if (priceHistory.length > 0) {
         priceHistory.push(player.sharePrice);
         cashHistory.push(player.cash);
     }
 
     return (
-        <div className="w-full glass-panel rounded-xl p-8 mb-6 relative overflow-hidden">
-            {/* Dynamic Gradient Accent based on company color */}
+        <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full glass-card p-8 mb-8 relative overflow-hidden"
+        >
+            {/* Animated Gradient Background */}
             <div
-                className="absolute top-0 left-0 right-0 h-1"
-                style={{ background: `linear-gradient(90deg, ${companyInfo?.color || '#10b981'}, transparent)` }}
-            ></div>
+                className="absolute inset-0 opacity-20"
+                style={{
+                    background: `radial-gradient(ellipse at top right, ${companyInfo?.color}40, transparent 50%),
+                       radial-gradient(ellipse at bottom left, ${companyInfo?.color}20, transparent 50%)`
+                }}
+            />
 
-            {/* Background glow */}
-            <div
-                className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-10"
-                style={{ backgroundColor: companyInfo?.color || '#10b981' }}
-            ></div>
+            {/* Floating Orbs */}
+            <motion.div
+                animate={{
+                    x: [0, 20, 0],
+                    y: [0, -10, 0],
+                    opacity: [0.3, 0.5, 0.3]
+                }}
+                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-10 right-20 w-32 h-32 rounded-full blur-3xl"
+                style={{ backgroundColor: companyInfo?.color }}
+            />
+            <motion.div
+                animate={{
+                    x: [0, -15, 0],
+                    y: [0, 15, 0],
+                    opacity: [0.2, 0.4, 0.2]
+                }}
+                transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute bottom-0 right-1/3 w-48 h-48 rounded-full blur-3xl bg-indigo-600/20"
+            />
 
             <div className="relative z-10">
-                <div className="flex justify-between items-start mb-8">
-                    <div>
-                        <div className="flex items-center gap-3 mb-1">
-                            <div
-                                className="w-3 h-3 rounded-full"
-                                style={{ backgroundColor: companyInfo?.color || '#10b981' }}
-                            />
-                            <h1 className="text-3xl font-bold text-white tracking-tight">{player.companyName}</h1>
+                {/* Header Row */}
+                <div className="flex justify-between items-start mb-10">
+                    <div className="flex items-center gap-4">
+                        {/* Company Badge */}
+                        <motion.div
+                            whileHover={{ scale: 1.05, rotate: 5 }}
+                            className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-lg"
+                            style={{
+                                background: `linear-gradient(135deg, ${companyInfo?.color}, ${companyInfo?.color}99)`,
+                                boxShadow: `0 10px 30px ${companyInfo?.color}40`
+                            }}
+                        >
+                            🏢
+                        </motion.div>
+
+                        <div>
+                            <h1 className="text-3xl font-bold text-white tracking-tight mb-1">
+                                {player.companyName}
+                            </h1>
+                            <div className="flex items-center gap-3 text-sm text-slate-400">
+                                <span className="flex items-center gap-1.5">
+                                    <Sparkles size={14} className="text-amber-400" />
+                                    Quarter {gameState.market.quarter}
+                                </span>
+                                <span>•</span>
+                                <span>Fiscal Year {Math.ceil(gameState.market.quarter / 4)}</span>
+                            </div>
                         </div>
-                        <div className="text-sm text-slate-400 mt-1">Quarter {gameState.market.quarter} • Fiscal Year {Math.ceil(gameState.market.quarter / 4)}</div>
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <TrendingUp className="text-emerald-400" size={16} />
-                        <span className="text-emerald-400 font-bold text-sm">Active</span>
-                    </div>
+
+                    {/* Status Badge */}
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500/15 border border-emerald-500/30"
+                    >
+                        <motion.div
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                            className="w-2 h-2 rounded-full bg-emerald-400"
+                        />
+                        <span className="text-emerald-400 font-bold text-sm uppercase tracking-widest">Active</span>
+                    </motion.div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                {/* Metrics Grid - Bento Style */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <MetricCard
                         label="Share Price"
                         value={player.sharePrice}
@@ -67,6 +117,7 @@ export function CompanyHeader() {
                         icon={<LineChart size={18} />}
                         sparklineData={priceHistory.length > 1 ? priceHistory : undefined}
                         accentColor={companyInfo?.color}
+                        large
                     />
                     <MetricCard
                         label="Net Worth"
@@ -102,7 +153,7 @@ export function CompanyHeader() {
                     />
                 </div>
             </div>
-        </div>
+        </motion.div>
     )
 }
 
@@ -118,10 +169,10 @@ interface MetricCardProps {
     subtext?: string;
     negative?: boolean;
     accentColor?: string;
+    large?: boolean;
 }
 
-function MetricCard({ label, value, prefix = '', suffix = '', decimals = 0, icon, sparklineData, trend, subtext, negative, accentColor }: MetricCardProps) {
-    // Calculate trend from sparkline data if available
+function MetricCard({ label, value, prefix = '', suffix = '', decimals = 0, icon, sparklineData, trend, subtext, negative, accentColor, large }: MetricCardProps) {
     let calculatedTrend = trend;
     if (sparklineData && sparklineData.length > 1 && trend === undefined) {
         const first = sparklineData[0];
@@ -132,31 +183,57 @@ function MetricCard({ label, value, prefix = '', suffix = '', decimals = 0, icon
     }
 
     return (
-        <div className="control-module p-4 relative group hover:border-emerald-500/30 transition-all">
-            <div className="flex items-center gap-2 mb-3 text-slate-400">
-                {icon}
-                <span className="text-xs font-bold uppercase tracking-widest">{label}</span>
-            </div>
+        <motion.div
+            whileHover={{ y: -4, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className={`
+                relative 
+                bg-slate-800/30 
+                backdrop-blur-sm
+                border border-white/5 
+                rounded-2xl 
+                p-5 
+                group 
+                overflow-hidden
+                hover:border-white/10
+                hover:bg-slate-800/50
+                transition-all duration-300
+            `}
+        >
+            {/* Hover Glow */}
+            <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                    background: `radial-gradient(circle at center, ${accentColor}10, transparent 70%)`
+                }}
+            />
 
-            <div className="flex items-end justify-between">
-                <div className={`text-2xl font-mono font-bold ${negative ? 'text-rose-400' : 'text-white'}`}>
-                    <AnimatedNumber value={value} prefix={prefix} suffix={suffix} decimals={decimals} />
+            <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-3 text-slate-400">
+                    <span style={{ color: accentColor }}>{icon}</span>
+                    <span className="text-xs font-bold uppercase tracking-widest">{label}</span>
                 </div>
 
-                {sparklineData && sparklineData.length > 1 && (
-                    <MicroSparkline data={sparklineData} color={accentColor} />
+                <div className="flex items-end justify-between gap-3">
+                    <div className={`font-mono font-bold ${large ? 'text-3xl' : 'text-2xl'} ${negative ? 'text-rose-400' : 'text-white'}`}>
+                        <AnimatedNumber value={value} prefix={prefix} suffix={suffix} decimals={decimals} />
+                    </div>
+
+                    {sparklineData && sparklineData.length > 1 && (
+                        <MicroSparkline data={sparklineData} color={accentColor} />
+                    )}
+                </div>
+
+                {calculatedTrend !== undefined && calculatedTrend !== 0 && (
+                    <div className={`absolute top-4 right-4 text-xs font-bold px-2 py-1 rounded-full ${calculatedTrend >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                        {calculatedTrend >= 0 ? '+' : ''}{calculatedTrend.toFixed(1)}%
+                    </div>
+                )}
+
+                {subtext && (
+                    <div className="text-xs text-slate-500 mt-2 font-mono">{subtext}</div>
                 )}
             </div>
-
-            {calculatedTrend !== undefined && calculatedTrend !== 0 && (
-                <div className={`absolute top-3 right-3 text-xs font-bold ${calculatedTrend >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {calculatedTrend >= 0 ? '+' : ''}{calculatedTrend.toFixed(1)}%
-                </div>
-            )}
-
-            {subtext && (
-                <div className="text-xs text-slate-500 mt-2 font-mono">{subtext}</div>
-            )}
-        </div>
+        </motion.div>
     )
 }
