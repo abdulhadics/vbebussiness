@@ -49,7 +49,7 @@ interface GameStore {
 
     // Game mode
     gameMode: 'single' | 'multiplayer' | null;
-    setGameMode: (mode: 'single' | 'multiplayer') => void;
+    setGameMode: (mode: 'single' | 'multiplayer' | null) => void;
 
     // Game actions
     submitDecisions: () => Promise<void>; // Submit current company's decisions
