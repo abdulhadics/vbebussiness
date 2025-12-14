@@ -74,7 +74,11 @@ export function FinanceDashboard() {
                 <div className="glass-panel rounded-xl p-12 text-center">
                     <div className="text-8xl mb-6">📊</div>
                     <h3 className="text-2xl font-bold text-white mb-3">No Financial Data Yet</h3>
-                    <p className="text-slate-400 text-lg">Execute your first quarter to see financial reports, charts, and analysis here.</p>
+                    <p className="text-slate-400 text-lg mb-6">Make your decisions, then click <strong className="text-white">"Run Quarter"</strong> in the footer below to simulate and see financial reports.</p>
+                    <div className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-black/30 text-sm text-slate-300 border border-white/10">
+                        <span>👇</span>
+                        <span>Look for the <strong className="text-white">RUN QUARTER</strong> button at the bottom of the screen</span>
+                    </div>
                 </div>
             )}
 
