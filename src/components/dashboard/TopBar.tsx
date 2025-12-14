@@ -1,11 +1,15 @@
 'use client';
-import { useGameStore } from "@/store/game-store";
+import { useGameStore, AVAILABLE_COMPANIES } from "@/store/game-store";
 import { formatCurrency } from "@/lib/utils";
 import { TrendingUp, DollarSign, Activity, RotateCcw } from "lucide-react";
 
 export function TopBar() {
-    const gameState = useGameStore((state) => state.gameState);
+    const activeCompanyId = useGameStore((state) => state.activeCompanyId);
+    const companyStates = useGameStore((state) => state.companyStates);
     const resetGame = useGameStore((state) => state.resetGame);
+
+    const gameState = companyStates[activeCompanyId];
+    const companyInfo = AVAILABLE_COMPANIES.find(c => c.id === activeCompanyId);
 
     const handleReset = () => {
         if (confirm("Are you sure you want to reset the simulation? All progress will be lost.")) {
@@ -13,14 +17,22 @@ export function TopBar() {
         }
     };
 
+    if (!gameState) return null;
+
     return (
         <div className="w-full flex items-center justify-between p-4 bg-slate-800 border-b border-slate-700 shadow-md mb-6 sticky top-0 z-50">
             <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-900/30 rounded-lg border border-emerald-500/30">
-                    <Activity className="text-emerald-400" size={24} />
+                <div
+                    className="p-2 rounded-lg border"
+                    style={{
+                        backgroundColor: `${companyInfo?.color}20`,
+                        borderColor: `${companyInfo?.color}30`
+                    }}
+                >
+                    <Activity style={{ color: companyInfo?.color }} size={24} />
                 </div>
                 <span className="text-xl font-bold tracking-widest text-white">
-                    TOPAZ<span className="text-emerald-500">VBE</span>
+                    TOPAZ<span style={{ color: companyInfo?.color }}>VBE</span>
                 </span>
             </div>
 

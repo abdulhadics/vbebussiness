@@ -1,15 +1,19 @@
 'use client';
-import { useGameStore } from "@/store/game-store";
+import { useGameStore, AVAILABLE_COMPANIES } from "@/store/game-store";
 import { formatCurrency } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Printer, Download } from "lucide-react";
+import { X, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Printer } from "lucide-react";
 
 export function QuarterlyReport() {
-    const gameState = useGameStore((state) => state.gameState);
+    const activeCompanyId = useGameStore((state) => state.activeCompanyId);
+    const companyStates = useGameStore((state) => state.companyStates);
     const showReport = useGameStore((state) => state.showReport);
     const closeReport = useGameStore((state) => state.closeReport);
 
-    if (!showReport) return null;
+    const gameState = companyStates[activeCompanyId];
+    const companyInfo = AVAILABLE_COMPANIES.find(c => c.id === activeCompanyId);
+
+    if (!showReport || !gameState) return null;
 
     const history = gameState.player.history;
     const currentQ = history[history.length - 1];
@@ -46,11 +50,14 @@ export function QuarterlyReport() {
                     animate={{ scale: 1, y: 0 }}
                     className="modal-content w-full max-w-4xl rounded-xl overflow-hidden shadow-2xl relative max-h-[90vh] overflow-y-auto"
                 >
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white flex justify-between items-center sticky top-0 z-10">
+                    {/* Header with company color */}
+                    <div
+                        className="p-6 text-white flex justify-between items-center sticky top-0 z-10"
+                        style={{ background: `linear-gradient(135deg, ${companyInfo?.color || '#10b981'}, ${companyInfo?.color}99)` }}
+                    >
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-widest opacity-80 mb-1">Quarter {currentQ.quarter} Results</h4>
-                            <h2 className="text-2xl font-bold tracking-tight">Management Report</h2>
+                            <h2 className="text-2xl font-bold tracking-tight">{gameState.player.companyName} - Management Report</h2>
                         </div>
                         <div className="flex items-center gap-3">
                             <button
@@ -148,7 +155,8 @@ export function QuarterlyReport() {
                         <div className="flex justify-center">
                             <button
                                 onClick={closeReport}
-                                className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm uppercase tracking-widest rounded-lg transition-all"
+                                style={{ backgroundColor: companyInfo?.color }}
+                                className="px-8 py-3 hover:opacity-90 text-white font-bold text-sm uppercase tracking-widest rounded-lg transition-all"
                             >
                                 Close Report
                             </button>
@@ -160,7 +168,7 @@ export function QuarterlyReport() {
     )
 }
 
-function SummaryCard({ label, value, prefix = '', positive, negative, warning }: any) {
+function SummaryCard({ label, value, prefix = '', positive, negative, warning }: { label: string; value: number; prefix?: string; positive?: boolean; negative?: boolean; warning?: boolean }) {
     let colorClass = 'text-white';
     if (positive && value > 0) colorClass = 'text-emerald-400';
     if (negative || value < 0) colorClass = 'text-rose-400';
@@ -176,7 +184,7 @@ function SummaryCard({ label, value, prefix = '', positive, negative, warning }:
     );
 }
 
-function TableRow({ label, value, bold, negative, highlight, indent, subheader, final }: any) {
+function TableRow({ label, value, bold, negative, highlight, indent, subheader, final }: { label: string; value?: number; bold?: boolean; negative?: boolean; highlight?: boolean; indent?: boolean; subheader?: boolean; final?: boolean }) {
     if (subheader) {
         return (
             <tr>
@@ -191,14 +199,14 @@ function TableRow({ label, value, bold, negative, highlight, indent, subheader, 
             <td className={`py-2 ${bold ? 'font-bold text-white' : 'text-slate-300'} ${indent ? 'pl-4' : ''}`}>
                 {label}
             </td>
-            <td className={`py-2 text-right font-mono ${bold ? 'font-bold' : ''} ${value < 0 || negative ? 'text-rose-400' : value > 0 ? 'text-emerald-400' : 'text-slate-300'}`}>
+            <td className={`py-2 text-right font-mono ${bold ? 'font-bold' : ''} ${(value !== undefined && value < 0) || negative ? 'text-rose-400' : value !== undefined && value > 0 ? 'text-emerald-400' : 'text-slate-300'}`}>
                 {value !== undefined ? `£${Math.abs(value).toLocaleString()}` : ''}
             </td>
         </tr>
     );
 }
 
-function MetricRow({ label, value, positive }: any) {
+function MetricRow({ label, value, positive }: { label: string; value: string; positive?: boolean }) {
     return (
         <div className="flex justify-between items-center py-2 border-b border-white/5">
             <span className="text-slate-400">{label}</span>

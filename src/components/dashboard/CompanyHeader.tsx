@@ -1,12 +1,19 @@
 'use client';
-import { useGameStore } from "@/store/game-store";
+import { useGameStore, AVAILABLE_COMPANIES } from "@/store/game-store";
 import { formatCurrency } from "@/lib/utils";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { MicroSparkline } from "@/components/ui/MicroSparkline";
 import { LineChart, DollarSign, Users, TrendingUp, Package } from "lucide-react";
 
 export function CompanyHeader() {
-    const gameState = useGameStore((state) => state.gameState);
+    const activeCompanyId = useGameStore((state) => state.activeCompanyId);
+    const companyStates = useGameStore((state) => state.companyStates);
+
+    const gameState = companyStates[activeCompanyId];
+    const companyInfo = AVAILABLE_COMPANIES.find(c => c.id === activeCompanyId);
+
+    if (!gameState) return null;
+
     const player = gameState.player;
 
     // Extract historical data for sparklines
@@ -21,16 +28,28 @@ export function CompanyHeader() {
 
     return (
         <div className="w-full glass-panel rounded-xl p-8 mb-6 relative overflow-hidden">
-            {/* Gradient Accent */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-violet-500 to-rose-500"></div>
+            {/* Dynamic Gradient Accent based on company color */}
+            <div
+                className="absolute top-0 left-0 right-0 h-1"
+                style={{ background: `linear-gradient(90deg, ${companyInfo?.color || '#10b981'}, transparent)` }}
+            ></div>
 
             {/* Background glow */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div
+                className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-10"
+                style={{ backgroundColor: companyInfo?.color || '#10b981' }}
+            ></div>
 
             <div className="relative z-10">
                 <div className="flex justify-between items-start mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight">{player.companyName}</h1>
+                        <div className="flex items-center gap-3 mb-1">
+                            <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: companyInfo?.color || '#10b981' }}
+                            />
+                            <h1 className="text-3xl font-bold text-white tracking-tight">{player.companyName}</h1>
+                        </div>
                         <div className="text-sm text-slate-400 mt-1">Quarter {gameState.market.quarter} • Fiscal Year {Math.ceil(gameState.market.quarter / 4)}</div>
                     </div>
                     <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
@@ -47,12 +66,14 @@ export function CompanyHeader() {
                         decimals={2}
                         icon={<LineChart size={18} />}
                         sparklineData={priceHistory.length > 1 ? priceHistory : undefined}
+                        accentColor={companyInfo?.color}
                     />
                     <MetricCard
                         label="Net Worth"
                         value={player.netWorth}
                         prefix="£"
                         icon={<DollarSign size={18} />}
+                        accentColor={companyInfo?.color}
                     />
                     <MetricCard
                         label="Cash Balance"
@@ -61,6 +82,7 @@ export function CompanyHeader() {
                         icon={<DollarSign size={18} />}
                         sparklineData={cashHistory.length > 1 ? cashHistory : undefined}
                         negative={player.cash < 0}
+                        accentColor={companyInfo?.color}
                     />
                     <MetricCard
                         label="Workforce"
@@ -68,6 +90,7 @@ export function CompanyHeader() {
                         suffix=" staff"
                         icon={<Users size={18} />}
                         subtext={`${player.morale}% Morale`}
+                        accentColor={companyInfo?.color}
                     />
                     <MetricCard
                         label="Machines"
@@ -75,6 +98,7 @@ export function CompanyHeader() {
                         suffix=" units"
                         icon={<Package size={18} />}
                         subtext={`${(player.machineEfficiency * 100).toFixed(0)}% Efficiency`}
+                        accentColor={companyInfo?.color}
                     />
                 </div>
             </div>
@@ -93,9 +117,10 @@ interface MetricCardProps {
     trend?: number;
     subtext?: string;
     negative?: boolean;
+    accentColor?: string;
 }
 
-function MetricCard({ label, value, prefix = '', suffix = '', decimals = 0, icon, sparklineData, trend, subtext, negative }: MetricCardProps) {
+function MetricCard({ label, value, prefix = '', suffix = '', decimals = 0, icon, sparklineData, trend, subtext, negative, accentColor }: MetricCardProps) {
     // Calculate trend from sparkline data if available
     let calculatedTrend = trend;
     if (sparklineData && sparklineData.length > 1 && trend === undefined) {
@@ -119,7 +144,7 @@ function MetricCard({ label, value, prefix = '', suffix = '', decimals = 0, icon
                 </div>
 
                 {sparklineData && sparklineData.length > 1 && (
-                    <MicroSparkline data={sparklineData} />
+                    <MicroSparkline data={sparklineData} color={accentColor} />
                 )}
             </div>
 

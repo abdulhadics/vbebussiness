@@ -7,14 +7,21 @@ import { DollarSign, Users, Megaphone, FlaskConical, ArrowRight } from "lucide-r
 import { motion } from "framer-motion";
 
 export function DecisionsPanel() {
-    const gameState = useGameStore((state) => state.gameState);
-    const decisions = useGameStore((state) => state.decisions);
+    const activeCompanyId = useGameStore((state) => state.activeCompanyId);
+    const companyStates = useGameStore((state) => state.companyStates);
+    const drafts = useGameStore((state) => state.drafts);
     const advanceQuarter = useGameStore((state) => state.advanceQuarter);
     const setProductDecision = useGameStore((state) => state.setProductDecision);
+    const setMarketing = useGameStore((state) => state.setMarketing);
+
+    const gameState = companyStates[activeCompanyId];
+    const decisions = drafts[activeCompanyId];
+
+    if (!gameState || !decisions) return null;
 
     // Use product 1 as the primary product for this legacy panel
     const productDecisions = decisions.products.p1;
-    const totalMarketing = Object.values(productDecisions.marketing).reduce((a, b) => a + b, 0);
+    const totalMarketing = Object.values(productDecisions.marketing).reduce((a: number, b: number) => a + b, 0);
 
     return (
         <div className="space-y-6">
@@ -73,7 +80,7 @@ export function DecisionsPanel() {
                         prefix="£"
                         value={productDecisions.marketing.south}
                         min={0} max={50000} step={1000}
-                        onChange={(v) => setProductDecision('p1', 'marketing', { ...productDecisions.marketing, south: v })}
+                        onChange={(v) => setMarketing('p1', 'south', v)}
                         helperText={totalMarketing > 30000 ? "Aggressive" : "Conservative"}
                     />
                     <div className="text-xs text-slate-500 mt-2">

@@ -5,9 +5,12 @@ import { AlertTriangle, Rocket, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function StickerOverlay() {
-    const gameState = useGameStore((state) => state.gameState);
-    const history = gameState.player.history;
-    const [sticker, setSticker] = useState<{ icon: any, text: string, color: string } | null>(null);
+    const activeCompanyId = useGameStore((state) => state.activeCompanyId);
+    const companyStates = useGameStore((state) => state.companyStates);
+
+    const gameState = companyStates[activeCompanyId];
+    const history = gameState?.player.history || [];
+    const [sticker, setSticker] = useState<{ icon: React.ElementType, text: string, color: string } | null>(null);
 
     useEffect(() => {
         if (history.length === 0) return;
@@ -15,7 +18,7 @@ export function StickerOverlay() {
         const currentQ = history[history.length - 1];
         const prevQ = history.length > 1 ? history[history.length - 2] : null;
 
-        let newSticker = null;
+        let newSticker: { icon: React.ElementType, text: string, color: string } | null = null;
 
         // 1. Crisis: Cash < 0
         if (currentQ.financials.assets.cash < 0) {
@@ -35,7 +38,7 @@ export function StickerOverlay() {
         const timer = setTimeout(() => setSticker(null), 5000);
         return () => clearTimeout(timer);
 
-    }, [gameState.market.quarter, history]);
+    }, [gameState?.market.quarter, history]);
 
     return (
         <AnimatePresence>

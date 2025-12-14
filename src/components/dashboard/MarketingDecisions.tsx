@@ -4,9 +4,15 @@ import { Megaphone, MapPin, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function MarketingDecisions() {
-    const decisions = useGameStore((state) => state.decisions);
+    const activeCompanyId = useGameStore((state) => state.activeCompanyId);
+    const drafts = useGameStore((state) => state.drafts);
     const setProductDecision = useGameStore((state) => state.setProductDecision);
     const setMarketing = useGameStore((state) => state.setMarketing);
+
+    // Get decisions for the active company
+    const decisions = drafts[activeCompanyId];
+
+    if (!decisions) return null;
 
     const products = [
         { id: 'p1' as const, name: 'Product 1', color: 'emerald' },

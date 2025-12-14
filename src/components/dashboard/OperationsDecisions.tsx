@@ -6,10 +6,17 @@ import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { Cog, Factory, Users, Wrench } from "lucide-react";
 
 export function OperationsDecisions() {
-    const decisions = useGameStore((state) => state.decisions);
+    const activeCompanyId = useGameStore((state) => state.activeCompanyId);
+    const drafts = useGameStore((state) => state.drafts);
+    const companyStates = useGameStore((state) => state.companyStates);
     const setOperations = useGameStore((state) => state.setOperations);
     const setPersonnel = useGameStore((state) => state.setPersonnel);
-    const player = useGameStore((state) => state.gameState.player);
+
+    // Get decisions and state for the active company
+    const decisions = drafts[activeCompanyId];
+    const player = companyStates[activeCompanyId]?.player;
+
+    if (!decisions || !player) return null;
 
     return (
         <div className="space-y-8">

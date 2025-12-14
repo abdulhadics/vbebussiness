@@ -4,13 +4,18 @@ import { formatCurrency } from "@/lib/utils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { QuarterResult } from '@/lib/types';
 
 export function KPIBoard() {
-    const gameState = useGameStore((state) => state.gameState);
+    const activeCompanyId = useGameStore((state) => state.activeCompanyId);
+    const companyStates = useGameStore((state) => state.companyStates);
+
+    const gameState = companyStates[activeCompanyId];
+    if (!gameState) return null;
 
     // Build chart data from history
     const data = gameState.player.history.length > 0
-        ? gameState.player.history.map(q => ({
+        ? gameState.player.history.map((q: QuarterResult) => ({
             quarter: q.quarter,
             revenue: q.financials.revenue,
             profit: q.financials.netProfit,

@@ -7,9 +7,13 @@ import { TrendingUp, TrendingDown, Wallet, CreditCard, PiggyBank, AlertTriangle,
 import { useState } from 'react';
 
 export function FinanceDashboard() {
-    const gameState = useGameStore((state) => state.gameState);
+    const activeCompanyId = useGameStore((state) => state.activeCompanyId);
+    const companyStates = useGameStore((state) => state.companyStates);
     const [loanAmount, setLoanAmount] = useState(0);
     const [dividendPerShare, setDividendPerShare] = useState(0);
+
+    const gameState = companyStates[activeCompanyId];
+    if (!gameState) return null;
 
     const player = gameState.player;
     const lastQuarter = player.history[player.history.length - 1];
